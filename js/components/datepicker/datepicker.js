@@ -1,7 +1,7 @@
-export default () => ({
+export default (rangeMode = false, disabledDates= []) => ({
     datePickerOpen: false,
     datePickerValue: '',
-    datePickerFormat: 'M d, Y',
+    datePickerFormat: 'YYYY-MM-DD',
     datePickerMonth: '',
     datePickerYear: '',
     datePickerDay: '',
@@ -14,26 +14,40 @@ export default () => ({
     datePickerDays: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
     showYearPicker: false,
     yearRangeStart: 0,
+    startDate: null,
+    endDate: null,
+    rangeMode: rangeMode,
+    disabledDates: disabledDates,
     init() {
         currentDate = new Date();
-        if (this.datePickerValue) {
-            currentDate = new Date(Date.parse(this.datePickerValue));
-        }
+        this.startDate = null;
+        this.endDate = null;
         this.datePickerMonth = currentDate.getMonth();
         this.datePickerYear = currentDate.getFullYear();
         this.datePickerDay = currentDate.getDay();
         this.datePickerHour = currentDate.getHours();
         this.datePickerMinute = currentDate.getMinutes();
         this.datePickerAmPm = currentDate.getHours() >= 12 ? 'PM' : 'AM'; // Set initial AM/PM value
-        this.datePickerValue = this.datePickerFormatDate(currentDate);
         this.datePickerCalculateDays();
     },
     datePickerDayClicked(day) {
-        let selectedDate = new Date(this.datePickerYear, this.datePickerMonth, day, this.datePickerHour, this.datePickerMinute);
-        this.datePickerDay = day;
-        this.datePickerValue = this.datePickerFormatDate(selectedDate);
-        this.datePickerIsSelectedDate(day);
-        this.datePickerOpen = false;
+        const selectedDate = new Date(this.datePickerYear, this.datePickerMonth, day);
+        if (this.isDateDisabled(selectedDate)) {
+            // Don't do anything if date is disabled
+            return;
+        }
+        if (this.rangeMode) {
+            if (this.startDate && !this.endDate && selectedDate > this.startDate) {
+                this.endDate = selectedDate;
+            } else {
+                this.startDate = selectedDate;
+                this.endDate = null;
+            }
+        } else {
+            this.startDate = selectedDate;
+            this.endDate = null;
+        }
+        this.updateInputValue();
     },
     datePickerPreviousMonth() {
         if (this.datePickerMonth == 0) {
@@ -54,7 +68,10 @@ export default () => ({
     },
     datePickerIsSelectedDate(day) {
         const d = new Date(this.datePickerYear, this.datePickerMonth, day);
-        return this.datePickerValue === this.datePickerFormatDate(d) ? true : false;
+        const formattedDate = this.datePickerFormatDate(d);
+        const isStart = this.startDate ? formattedDate === this.datePickerFormatDate(this.startDate) : false;
+        const isEnd = this.endDate ? formattedDate === this.datePickerFormatDate(this.endDate) : false;
+        return this.datePickerValue.includes(this.datePickerFormatDate(d));
     },
     datePickerIsToday(day) {
         const today = new Date();
@@ -63,7 +80,6 @@ export default () => ({
     },
     datePickerCalculateDays() {
         let daysInMonth = new Date(this.datePickerYear, this.datePickerMonth + 1, 0).getDate();
-        // find where to start calendar day of week
         let dayOfWeek = new Date(this.datePickerYear, this.datePickerMonth).getDay();
         let blankdaysArray = [];
         for (var i = 1; i <= dayOfWeek; i++) {
@@ -71,7 +87,9 @@ export default () => ({
         }
         let daysArray = [];
         for (var i = 1; i <= daysInMonth; i++) {
-            daysArray.push(i);
+            const d = new Date(this.datePickerYear, this.datePickerMonth, i);
+            const isDisabled = this.isDateDisabled(d); // Check if the date is disabled
+            daysArray.push({ day: i, isDisabled });    // Store the day number and its disabled status
         }
         this.datePickerBlankDaysInMonth = blankdaysArray;
         this.datePickerDaysInMonth = daysArray;
@@ -81,8 +99,12 @@ export default () => ({
         let formattedDate = ('0' + date.getDate()).slice(-2); // appends 0 (zero) in single digit date
         let formattedMonth = this.datePickerMonthNames[date.getMonth()];
         let formattedMonthShortName = this.datePickerMonthNames[date.getMonth()].substring(0, 3);
-        let formattedMonthInNumber = ('0' + (parseInt(date.getMonth()) + 1)).slice(-2);
+        let formattedMonthInNumber = ('0' + (date.getMonth() + 1)).slice(-2);
         let formattedYear = date.getFullYear();
+        let formattedHour = date.getHours();
+        let formattedMinute = ('0' + date.getMinutes()).slice(-2);
+        let amPm = formattedHour >= 12 ? 'PM' : 'AM';
+
         if (this.datePickerFormat === 'M d, Y') {
             return `${formattedMonthShortName} ${formattedDate}, ${formattedYear}`;
         }
@@ -98,32 +120,36 @@ export default () => ({
         if (this.datePickerFormat === 'D d M, Y') {
             return `${formattedDay} ${formattedDate} ${formattedMonthShortName} ${formattedYear}`;
         }
-        return `${formattedMonth} ${formattedDate}, ${formattedYear}`;
+
+        // Convert 24h to 12h format if needed
+        formattedHour = formattedHour % 12 || 12;
+
+        // Append the time to the formatted date string
+        return `${formattedMonth} ${formattedDate}, ${formattedYear} ${formattedHour}:${formattedMinute} ${amPm}`;
     },
     setDate(type) {
         let currentDate = new Date();
         if (type === 'yesterday') {
             currentDate.setDate(currentDate.getDate() - 1);
-        } else if (type === 'today') {
-            // No change needed for today
         } else if (type === 'tomorrow') {
             currentDate.setDate(currentDate.getDate() + 1);
         }
+        // No change needed for 'today', as currentDate is already set to now.
 
         this.datePickerMonth = currentDate.getMonth();
         this.datePickerYear = currentDate.getFullYear();
-        this.datePickerDay = currentDate.getDay();
+        this.datePickerDay = currentDate.getDate(); // Use getDate() to get the day of the month
         this.datePickerHour = currentDate.getHours();
         this.datePickerMinute = currentDate.getMinutes();
         this.datePickerAmPm = currentDate.getHours() >= 12 ? 'PM' : 'AM';
         this.datePickerValue = this.datePickerFormatDate(currentDate);
-        this.datePickerCalculateDays();
+        this.datePickerCalculateDays(); // Important to recalculate the days for the new month/year
     },
     toggleYearPicker() {
-        this.showYearPicker = !this.showYearPicker;
+        this.showYearPicker = true;
         // Initialize the year range starting with the current year
         if (this.showYearPicker) {
-            this.yearRangeStart = this.datePickerYear - 19;
+            this.yearRangeStart = this.datePickerYear - 11;
         }
     },
 
@@ -133,17 +159,56 @@ export default () => ({
         return Array.from({ length: endYear - startYear + 1 }, (_, k) => startYear + k);
     },
 
-    previousYearRange() {
+    previousYearRange(e) {
+        e.stopPropagation()
         this.yearRangeStart -= 19;
     },
 
-    nextYearRange() {
+    nextYearRange(e) {
+        e.stopPropagation()
         this.yearRangeStart += 19;
     },
 
-    selectYear(year) {
+    selectYear(e, year) {
+        e.stopPropagation()
         this.datePickerYear = year;
         this.showYearPicker = false;
         this.datePickerCalculateDays();
-    }
+    },
+
+
+    updateInputValue() {
+        if (this.rangeMode) {
+            if (this.startDate) {
+                this.datePickerValue = this.startDate ? this.datePickerFormatDate(this.startDate) : '';
+                if (this.endDate) {
+                    this.datePickerValue += ' - ' + (this.endDate ? this.datePickerFormatDate(this.endDate) : '');
+                    this.datePickerOpen = false;
+                }
+            } else {
+                this.datePickerValue = '';
+                this.datePickerOpen = false;
+            }
+        } else {
+            this.datePickerValue = this.startDate ? this.datePickerFormatDate(this.startDate) : '';
+            this.datePickerOpen = false;
+        }
+    },
+
+    datePickerAway() {
+        if (this.rangeMode) {
+            if (this.endDate) {
+                this.datePickerOpen = false;
+            }
+        } else {
+            this.datePickerOpen = false;
+        }
+    },
+
+    // Function to check if a date is disabled
+    isDateDisabled(date) {
+        const formattedDate = this.datePickerFormatDate(date);
+        return this.disabledDates.includes(formattedDate);
+    },
+
 });

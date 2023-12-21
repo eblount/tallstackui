@@ -13,9 +13,14 @@ use TallStackUi\View\Components\BaseComponent;
 class DatePicker extends BaseComponent implements Personalization
 {
     public function __construct(
-        
+        public ?bool $rangeMode = false,
+        public ?bool $timePicker = false,
+        public ?bool $helperBtns = false,
+        public ?string $label = "Select Date",
+        public ?array $disabledDates = array(),
     ) {
         //
+
     }
 
     public function blade(): View

@@ -3,12 +3,12 @@
     "css": [
       "tallstackui-C64i7G0l.css"
     ],
-    "file": "tallstackui-98bvEJir.js",
+    "file": "tallstackui-htAWcC7m.js",
     "isEntry": true,
     "src": "js/tallstackui.js"
   },
   "src/resources/css/tallstackui.css": {
-    "file": "tallstackui-K59QiDmd.css",
+    "file": "tallstackui-fB3Fp5Em.css",
     "isEntry": true,
     "src": "src/resources/css/tallstackui.css"
   }
