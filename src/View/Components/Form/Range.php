@@ -4,25 +4,28 @@ namespace TallStackUi\View\Components\Form;
 
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Arr;
+use TallStackUi\Foundation\Attributes\SkipDebug;
+use TallStackUi\Foundation\Attributes\SoftPersonalization;
 use TallStackUi\Foundation\Personalization\Contracts\Personalization;
-use TallStackUi\Foundation\Personalization\SoftPersonalization;
 use TallStackUi\View\Components\BaseComponent;
+use TallStackUi\View\Components\Form\Traits\DefaultInputClasses;
 
 #[SoftPersonalization('form.range')]
 class Range extends BaseComponent implements Personalization
 {
+    use DefaultInputClasses;
+
     public function __construct(
         public ?string $label = null,
-        public ?string $id = null,
         public ?string $hint = null,
         public ?bool $sm = null,
         public ?bool $md = null,
         public ?bool $lg = null,
+        #[SkipDebug]
         public ?string $size = null,
         public ?string $color = 'primary',
         public ?bool $invalidate = null,
     ) {
-        $this->id ??= uniqid();
         $this->size = $this->sm ? 'sm' : ($this->lg ? 'lg' : 'md');
     }
 

@@ -1,16 +1,6 @@
 import {error, warning} from '../../helpers';
 import {body} from './helpers';
 
-/**
- * @param model {Object|String} - The model object or the value
- * @param request {Object|String} - The request object or the url
- * @param selectable {Object} - The label and value of the select when dimensional is true
- * @param options {Array} - The options of the select when is common
- * @param multiple {Boolean} - If true, the select will be multiple
- * @param placeholder {String} - The placeholder of the select
- * @param searchable {Boolean} - If true, the search input will be shown
- * @param common {Boolean} - If true, the options will be taken from the options variable
- */
 export default (
     model = null,
     request,
@@ -20,6 +10,9 @@ export default (
     placeholder = 'Select an option',
     searchable = false,
     common = true,
+    livewire,
+    property,
+    value,
 ) => ({
   show: false,
   model: model,
@@ -38,17 +31,30 @@ export default (
   options: options,
   observer: null,
   observing: false,
+  livewire: livewire,
+  property: property,
+  value: value,
   async init() {
+    if (!this.livewire) {
+      if (this.common) {
+        this.$nextTick(() => this.initAsVanilla());
+      } else {
+        await this.$nextTick(() => this.initAsVanilla());
+      }
+    }
+
+    const label = this.livewire ? 'wire:model' : 'value';
+
     if (this.multiple && this.model && this.model.constructor !== Array) {
-      return warning('The [wire:model] must be an array');
+      return warning(`The [${label}] must be an array`);
     }
 
     if (!this.multiple && this.model && this.model.constructor === Array) {
-      return warning('The [wire:model] must not be an array when is not multiple');
+      return warning(`The [${label}] must not be an array when is not multiple`);
     }
 
     if (this.common && (this.dimensional && this.selectable.constructor === Array && this.selectable?.length === 0)) {
-      return warning('The [select] must be defined');
+      return warning(`The [${label}] must be defined`);
     }
 
     if (this.common) {
@@ -56,6 +62,17 @@ export default (
     }
 
     await this.initAsRequest();
+  },
+  /**
+   * Initialize the component as Blade vanilla
+   * @returns {void}
+   */
+  initAsVanilla() {
+    if (!this.value) {
+      return;
+    }
+
+    this.input = this.model = this.value;
   },
   /**
    * Initialize the component as common
@@ -66,18 +83,20 @@ export default (
 
     if (this.multiple) {
       this.selects = this.available.filter((option) => this.dimensional ?
-              this.model?.includes(option[this.selectable.value]) :
-              this.model?.includes(option));
+          this.model?.includes(option[this.selectable.value]) :
+          this.model?.includes(option));
     } else {
       this.selects = this.available.find((option) => this.dimensional ?
-              this.model === option[this.selectable.value] :
-              this.model === option,
+          this.model === option[this.selectable.value] :
+          this.model === option,
       );
 
-      if (!this.empty) {
-        this.selects = this.dimensional ?
-            [this.selects] :
-            this.selects;
+      if (this.selects) {
+        this.selects = [this.selects];
+
+        this.placeholder = this.dimensional ?
+            this.selects[0]?.[this.selectable.label] ?? placeholder :
+            this.selects[0] ?? placeholder;
       } else {
         this.selects = [];
       }
@@ -118,16 +137,14 @@ export default (
             value?.includes(option));
       } else {
         this.selects = this.available.find((option) => this.dimensional ?
-                value.toString() === option[this.selectable.value].toString() :
-                value.toString() === option.toString());
+            value.toString() === option[this.selectable.value].toString() :
+            value.toString() === option.toString());
 
-        this.selects = this.dimensional ?
-            [this.selects] :
-            this.selects;
+        this.selects = [this.selects];
 
         this.placeholder = this.dimensional ?
             this.selects[0]?.[this.selectable.label] ?? placeholder :
-            (!this.empty ? this.selects : placeholder);
+            this.selects[0] ?? placeholder;
       }
     });
   },
@@ -290,18 +307,19 @@ export default (
 
     if (this.selected(option)) {
       this.clear(option);
+      this.input = this.model;
 
       return;
     }
 
     if (this.multiple) {
       this.selects = !this.empty ?
-                [...this.selects, option] :
-                [option];
+          [...this.selects, option] :
+          [option];
 
       this.model = this.dimensional ?
-                this.selects.map((selected) => selected[this.selectable.value]) :
-                this.selects;
+          this.selects.map((selected) => selected[this.selectable.value]) :
+          this.selects;
 
       this.search = '';
     } else {
@@ -313,6 +331,7 @@ export default (
 
     this.show = this.quantity === this.available?.length ? false : this.multiple;
     this.search = '';
+    this.input = this.model;
   },
   /**
    * Check if the `option` is selected
@@ -324,8 +343,8 @@ export default (
     if (this.empty || this.available?.length === 0) return false;
 
     return this.multiple ?
-      this.selects?.some((selected) => JSON.stringify(selected) === JSON.stringify(option)) :
-      JSON.stringify(this.selects[0] ?? this.selects) === JSON.stringify(option);
+        this.selects?.some((selected) => JSON.stringify(selected) === JSON.stringify(option)) :
+        JSON.stringify(this.selects[0] ?? this.selects) === JSON.stringify(option);
   },
   /**
    * @param selected {Object|null}
@@ -339,8 +358,8 @@ export default (
             option !== selected);
 
         this.model = this.dimensional ?
-                    this.selects.map((selected) => selected[this.selectable.value]) :
-                    this.selects;
+            this.selects.map((selected) => selected[this.selectable.value]) :
+            this.selects;
       } else {
         this.selects = [];
       }
@@ -360,6 +379,7 @@ export default (
    * @param ignore {Boolean} - If true, will not interact with `show` property
    */
   reset(ignore = false) {
+    this.input = null;
     this.model = null;
     this.placeholder = placeholder;
     this.search = '';
@@ -370,6 +390,23 @@ export default (
     }
 
     this.show = false;
+  },
+  /**
+   * Set the input value when is not Livewire
+   * @param data {*}
+   */
+  set input(data) {
+    if (this.livewire) {
+      return;
+    }
+
+    const input = document.getElementsByName(this.property)[0];
+
+    if (!input) {
+      return;
+    }
+
+    input.value = !data ? '' : JSON.stringify(data);
   },
   /**
    * The `selects` quantity

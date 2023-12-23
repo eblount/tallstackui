@@ -46,11 +46,11 @@ class ResolveConfiguration
 
     private function loading(Loading $component): array
     {
-        $configuration = config('tallstackui.settings.loading');
+        $configuration = collect(config('tallstackui.settings.loading'));
 
-        $component->zIndex ??= $configuration['z-index'];
-        $component->blur ??= $configuration['blur'];
-        $component->opacity ??= $configuration['opacity'];
+        $component->zIndex ??= $configuration->get('z-index', 'z-50');
+        $component->blur ??= $configuration->get('blur', false);
+        $component->opacity ??= $configuration->get('opacity', true);
 
         return collect($component)
             ->only(['zIndex', 'blur', 'opacity'])
@@ -59,12 +59,13 @@ class ResolveConfiguration
 
     private function modal(Modal $component): array
     {
-        $configuration = config('tallstackui.settings.modal');
+        $configuration = collect(config('tallstackui.settings.modal'));
 
-        $component->zIndex ??= $configuration['z-index'];
-        $component->size ??= $configuration['size'];
-        $component->blur ??= $configuration['blur'];
-        $component->persistent ??= $configuration['persistent'];
+        $component->zIndex ??= $configuration->get('z-index', 'z-50');
+        $component->size ??= $configuration->get('size', '2xl');
+        $component->blur ??= $configuration->get('blur', false);
+        $component->persistent ??= $configuration->get('persistent', false);
+        $component->center ??= $configuration->get('center', false);
 
         $component->size = match ($component->size) {
             'sm' => 'sm:max-w-sm',
@@ -80,19 +81,19 @@ class ResolveConfiguration
         };
 
         return collect($component)
-            ->only(['zIndex', 'size', 'blur', 'persistent'])
+            ->only(['zIndex', 'size', 'blur', 'persistent', 'center'])
             ->toArray();
     }
 
     private function slide(Slide $component): array
     {
-        $configuration = config('tallstackui.settings.slide');
+        $configuration = collect(config('tallstackui.settings.slide'));
 
-        $component->zIndex ??= $configuration['z-index'];
-        $component->size ??= $configuration['size'];
-        $component->blur ??= $configuration['blur'];
-        $component->persistent ??= $configuration['persistent'];
-        $component->left ??= $configuration['position'] === 'left';
+        $component->zIndex ??= $configuration->get('z-index', 'z-50');
+        $component->size ??= $configuration->get('size', 'lg');
+        $component->blur ??= $configuration->get('blur', false);
+        $component->persistent ??= $configuration->get('persistent', false);
+        $component->left ??= $configuration->get('position', 'right') === 'left';
 
         $component->size = match ($component->size) {
             'sm' => 'sm:max-w-sm',

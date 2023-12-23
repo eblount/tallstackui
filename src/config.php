@@ -8,14 +8,28 @@ return [
     | Debug Mode
     |--------------------------------------------------------------------------
     |
-    | When enabled, all components in use will receive an icon with
-    | a tooltip displaying all attributes of the components in use
+    | Control the debug mode for TallStackUI components.
     */
     'debug' => [
-        'status' => env('TALLSTACKUI_DEBUG', false),
+        'status' => env('TALLSTACKUI_DEBUG_MODE', false),
+        /*
+        |----------------------------------------------------------------------
+        | You can control in which environments the debug mode is enabled.
+        |----------------------------------------------------------------------
+        */
         'environments' => [
             'local',
-            'testing',
+            'sandbox',
+            'staging',
+        ],
+        /*
+        |----------------------------------------------------------------------
+        | You can ignore debug mode for certain specific components
+        | by setting the exact component name in this array.
+        |----------------------------------------------------------------------
+        */
+        'ignore' => [
+            //
         ],
     ],
 
@@ -24,7 +38,7 @@ return [
     | Icon Style
     |--------------------------------------------------------------------------
     |
-    | Configure the default icon style (Allowed: solid, outline)
+    | Control the default icon style (Allowed: solid, outline)
     */
     'icon' => 'solid',
 
@@ -58,12 +72,14 @@ return [
         | blur: enables the background blur effect by default.
         | persistent: enables the modal to not be closed by clicking outside by default.
         | size: controls the default modal size (Allowed: sm, md, lg, xl, 2xl, 3xl, 4xl, 5xl, 6xl, 7xl).
+        | center: controls if the modal is centered by default.
         */
         'modal' => [
             'z-index' => 'z-50',
             'blur' => false,
             'persistent' => false,
             'size' => '2xl',
+            'center' => false,
         ],
         /*
         |----------------------------------------------------------------------
@@ -141,10 +157,12 @@ return [
         'icon' => Components\Icon::class,
         'input' => Components\Form\Input::class,
         'label' => Components\Form\Label::class,
+        'link' => Components\Link::class,
         'loading' => Components\Loading::class,
         'modal' => Components\Modal::class,
         'number' => Components\Form\Number::class,
         'password' => Components\Form\Password::class,
+        'pin' => Components\Form\Pin::class,
         'radio' => Components\Form\Radio::class,
         'range' => Components\Form\Range::class,
         'select.native' => Components\Select\Native::class,

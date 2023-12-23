@@ -5,8 +5,8 @@ namespace TallStackUi\View\Components;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Arr;
 use InvalidArgumentException;
+use TallStackUi\Foundation\Attributes\SoftPersonalization;
 use TallStackUi\Foundation\Personalization\Contracts\Personalization;
-use TallStackUi\Foundation\Personalization\SoftPersonalization;
 
 #[SoftPersonalization('slide')]
 class Slide extends BaseComponent implements Personalization
@@ -56,19 +56,19 @@ class Slide extends BaseComponent implements Personalization
             throw new InvalidArgumentException('The slide [wire] property cannot be an empty string');
         }
 
-        $configuration = config('tallstackui.settings.slide');
+        $configuration = collect(config('tallstackui.settings.slide'));
         $sizes = ['sm', 'md', 'lg', 'xl', '2xl', '3xl', '4xl', '5xl', '6xl', '7xl', 'full'];
         $positions = ['right', 'left'];
 
-        if (! in_array($this->size ?? $configuration['size'], $sizes)) {
+        if (! in_array($this->size ?? $configuration->get('size', 'lg'), $sizes)) {
             throw new InvalidArgumentException('The slide size must be one of the following: ['.implode(', ', $sizes).']');
         }
 
-        if (! str_starts_with($this->zIndex ?? $configuration['z-index'], 'z-')) {
+        if (! str($this->zIndex ?? $configuration->get('z-index', 'z-50'))->startsWith('z-')) {
             throw new InvalidArgumentException('The slide [z-index] must start with z- prefix');
         }
 
-        if (! in_array($this->left ? 'left' : $configuration['position'], $positions)) {
+        if (! in_array($this->left ? 'left' : $configuration->get('position', 'right'), $positions)) {
             throw new InvalidArgumentException('The slide [position] must be one of the following: ['.implode(', ', $positions).']');
         }
     }

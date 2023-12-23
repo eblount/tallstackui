@@ -1,11 +1,10 @@
 @php
     $icons = $icons();
-    $wire = $wireable($attributes);
-    $error = !$invalidate && $wire && $errors->has($wire->value());
+    [$property, $error, $id, $entangle] = $bind($attributes, $errors ?? null, isset($__livewire));
     $personalize = $classes();
 @endphp
 
-<x-wrapper.input :$id :$wire :$label :$hint :$invalidate>
+<x-wrapper.input :$id :$property :$error :$label :$hint :$invalidate>
     <div @class([
             $personalize['input.class.wrapper'],
             $personalize['input.class.color.base'] => !$error,
@@ -13,13 +12,13 @@
             $personalize['input.class.color.disabled'] => $attributes->get('disabled') || $attributes->get('readonly'),
             $personalize['error'] => $error === true
         ]) x-data="tallstackui_formNumber(
-            @entangleable($attributes),
+            {!! $entangle !!},
             @js($min),
             @js($max),
             @js($delay),
             @js($attributes->get('disabled', false) || $attributes->get('readonly', false))
         )">
-        <input id="{{ $id }}"
+        <input @if ($id) id="{{ $id }}" @endif
                type="number"
                inputmode="numeric"
                @if ($min) min="{{ $min }}" @endif

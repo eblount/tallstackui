@@ -2,11 +2,11 @@
 
 namespace TallStackUi\View\Components\Interaction;
 
+use Exception;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Arr;
-use InvalidArgumentException;
+use TallStackUi\Foundation\Attributes\SoftPersonalization;
 use TallStackUi\Foundation\Personalization\Contracts\Personalization;
-use TallStackUi\Foundation\Personalization\SoftPersonalization;
 use TallStackUi\View\Components\BaseComponent;
 
 #[SoftPersonalization('toast')]
@@ -61,15 +61,28 @@ class Toast extends BaseComponent implements Personalization
 
     protected function validate(): void
     {
-        $configuration = config('tallstackui.settings.toast');
+        $configuration = collect(config('tallstackui.settings.toast'));
         $positions = ['top-right', 'top-left', 'bottom-right', 'bottom-left'];
+        $messages = __('tallstack-ui::messages.toast.button');
 
-        if (! in_array($configuration['position'], $positions)) {
-            throw new InvalidArgumentException('The toast position must be one of the following: ['.implode(', ', $positions).']');
+        if (! in_array($configuration->get('position', 'top-right'), $positions)) {
+            throw new Exception('The toast position must be one of the following: ['.implode(', ', $positions).']');
         }
 
-        if (! str_starts_with($configuration['z-index'], 'z-')) {
-            throw new InvalidArgumentException('The toast z-index must start with z- prefix');
+        if (! str($configuration->get('z-index', 'z-50'))->startsWith('z-')) {
+            throw new Exception('The toast z-index must start with z- prefix');
+        }
+
+        if (blank($messages['ok'] ?? null)) {
+            throw new Exception('The toast [ok] message cannot be empty.');
+        }
+
+        if (blank($messages['confirm'] ?? null)) {
+            throw new Exception('The toast [confirm] message cannot be empty.');
+        }
+
+        if (blank($messages['cancel'] ?? null)) {
+            throw new Exception('The toast [cancel] message cannot be empty.');
         }
     }
 }

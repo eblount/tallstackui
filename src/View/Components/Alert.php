@@ -4,8 +4,9 @@ namespace TallStackUi\View\Components;
 
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Arr;
+use TallStackUi\Foundation\Attributes\SkipDebug;
+use TallStackUi\Foundation\Attributes\SoftPersonalization;
 use TallStackUi\Foundation\Personalization\Contracts\Personalization;
-use TallStackUi\Foundation\Personalization\SoftPersonalization;
 
 #[SoftPersonalization('alert')]
 class Alert extends BaseComponent implements Personalization
@@ -18,7 +19,9 @@ class Alert extends BaseComponent implements Personalization
         public ?bool $close = false,
         public ?bool $light = false,
         public ?bool $outline = false,
+        #[SkipDebug]
         public ?string $style = 'solid',
+        #[SkipDebug]
         public ?string $footer = null,
     ) {
         $this->style = $this->outline ? 'outline' : ($this->light ? 'light' : 'solid');
@@ -42,7 +45,7 @@ class Alert extends BaseComponent implements Personalization
                 'description' => 'text-sm',
             ],
             'close' => [
-                'wrapper' => 'ml-auto pl-3 flex',
+                'wrapper' => 'ml-auto flex items-start pl-3',
                 'size' => 'w-5 h-5',
             ],
             'icon' => [

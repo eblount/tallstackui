@@ -4,20 +4,21 @@ namespace TallStackUi\View\Components\Wrapper;
 
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Arr;
+use TallStackUi\Foundation\Attributes\SoftPersonalization;
 use TallStackUi\Foundation\Personalization\Contracts\Personalization;
-use TallStackUi\Foundation\Personalization\SoftPersonalization;
 use TallStackUi\View\Components\BaseComponent;
 
 #[SoftPersonalization('wrapper.radio')]
 class Radio extends BaseComponent implements Personalization
 {
     public function __construct(
-        public ?string $wire = null,
+        public ?string $property = null,
         public ?string $label = null,
         public ?string $id = null,
         public ?string $position = 'left',
         public ?string $alignment = 'middle',
         public ?bool $invalidate = null,
+        public ?bool $error = false,
     ) {
         //
     }

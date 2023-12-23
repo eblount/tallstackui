@@ -1,10 +1,10 @@
 @php
-    $wire = $wireable($attributes);
-    $error = !$invalidate && $wire && $errors->has($wire->value());
+    [$property, $error, $id] = $bind($attributes, $errors ?? null, isset($__livewire));
     $personalize = $classes();
+    $slot = $attributes->get('value', $slot);
 @endphp
 
-<x-wrapper.input :$id :$wire :$label :$hint :$invalidate>
+<x-wrapper.input :$id :$property :$error :$label :$hint :$invalidate>
     <div @class([
         $personalize['input.wrapper'],
         $personalize['input.color.base'] => !$error,
@@ -12,9 +12,9 @@
         $personalize['input.color.disabled'] => $attributes->get('disabled') || $attributes->get('readonly'),
         $personalize['error'] => $error,
     ])>
-        <textarea @if ($resizeAuto) x-data="tallstackui_formTextArea()" x-on:input="resize()" @endif {{ $attributes->class([
+        <textarea @if ($id) id="{{ $id }}" @endif @if ($resizeAuto) x-data="tallstackui_formTextArea()" x-on:input="resize()" @endif {{ $attributes->class([
             'resize-none' => !$resize && !$resizeAuto,
             $personalize['input.base'],
-        ])->merge(['rows' => 3]) }} id="{{ $id }}">{{ $slot }}</textarea>
+        ])->merge(['rows' => 3]) }}>{{ $slot }}</textarea>
     </div>
 </x-wrapper.input>

@@ -1,14 +1,14 @@
 @php
+    [$property, $error, $id, $entangle] = $bind($attributes, $errors ?? null, isset($__livewire));
     $personalize = $classes();
-    $wire = $wireable($attributes);
-    $error = !$invalidate && $wire && $errors->has($wire->value());
 @endphp
 
-<x-wrapper.input :$id :$wire :$label :$hint :$invalidate>
+<x-wrapper.input :$id :$property :$error :$label :$hint :$invalidate>
     <div x-data="tallstackui_formColor(
-            @entangleable($attributes),
+            {!! $entangle !!},
             @js($mode),
-            @js($colors))"
+            @js($colors),
+            @js($attributes->get('value')))"
          x-ref="wrapper"
          x-cloak
          @class([
@@ -20,12 +20,18 @@
          ])>
         <div @class($personalize['selected.wrapper'])>
             <template x-if="model">
-                <button type="button" @class($personalize['selected.base']) :style="{ 'background-color': model }" x-on:click="show = !show"></button>
+                <button type="button"
+                        @class($personalize['selected.base'])
+                        :style="{ 'background-color': model }"
+                        x-on:click="show = !show"></button>
             </template>
         </div>
-        <input id="{{ $id }}" @class($personalize['input.base']) type="text" x-model="model" x-ref="input">
+        <div class="w-full" wire:ignore>
+            <input @if ($id) id="{{ $id }}" @endif {{ $attributes->class($personalize['input.base']) }} type="text" x-model="model" x-ref="input">
+        </div>
         <div class="flex items-center">
-            <button @if ($attributes->get('disabled') || $attributes->get('readonly')) disabled @endif
+            <button type="button"
+                    @if ($attributes->get('disabled') || $attributes->get('readonly')) disabled @endif
                     x-on:click="show = !show"
                     dusk="tallstackui_form_color">
                 <x-icon name="swatch" :$error @class($personalize['icon.class'])/>

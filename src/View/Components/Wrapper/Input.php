@@ -3,20 +3,21 @@
 namespace TallStackUi\View\Components\Wrapper;
 
 use Illuminate\Contracts\View\View;
+use TallStackUi\Foundation\Attributes\SoftPersonalization;
 use TallStackUi\Foundation\Personalization\Contracts\Personalization;
-use TallStackUi\Foundation\Personalization\SoftPersonalization;
 use TallStackUi\View\Components\BaseComponent;
 
 #[SoftPersonalization('wrapper.input')]
 class Input extends BaseComponent implements Personalization
 {
     public function __construct(
-        public ?string $wire = null,
+        public ?string $property = null,
         public ?string $label = null,
         public ?string $id = null,
         public ?string $hint = null,
         public ?bool $invalidate = null,
         public ?bool $password = false,
+        public ?bool $error = false,
     ) {
         //
     }

@@ -1,10 +1,9 @@
 @php
-    $wire = $wireable($attributes);
-    $error = !$invalidate && $wire && $errors->has($wire->value());
+    [$property, $error, $id] = $bind($attributes, $errors ?? null, isset($__livewire));
     $personalize = $classes();
 @endphp
 
-<x-wrapper.input :$id :$wire :$label :$hint :$invalidate>
+<x-wrapper.input :$id :$property :$error :$label :$hint :$invalidate>
     @if ($icon)
         <div @class([ $personalize['icon.wrapper'], $personalize['icon.paddings.' . $position]])>
             <x-icon :$icon :$error @class([$personalize['icon.size'], $personalize['icon.color'] => !$invalidate]) />
@@ -22,7 +21,7 @@
         @if ($prefix)
             <span @class([$personalize['input.class.slot'], $personalize['error'] => $error])>{{ $prefix }}</span>
         @endif
-        <input id="{{ $id }}" {{ $attributes->class($personalize['input.class.base']) }}>
+        <input @if ($id) id="{{ $id }}" @endif {{ $attributes->class($personalize['input.class.base']) }}>
         @if ($suffix)
             <span @class([$personalize['input.class.slot'], $personalize['error'] => $error])>{{ $suffix }}</span>
         @endif

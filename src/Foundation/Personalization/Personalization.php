@@ -4,7 +4,7 @@ namespace TallStackUi\Foundation\Personalization;
 
 use Closure;
 use Exception;
-use InvalidArgumentException;
+use RuntimeException;
 use TallStackUi\Contracts\Personalizable;
 use TallStackUi\View\Components\Alert;
 use TallStackUi\View\Components\Avatar;
@@ -13,6 +13,7 @@ use TallStackUi\View\Components\Banner;
 use TallStackUi\View\Components\Button\Button;
 use TallStackUi\View\Components\Button\Circle;
 use TallStackUi\View\Components\Card;
+use TallStackUi\View\Components\DatePicker\DatePicker;
 use TallStackUi\View\Components\Dropdown\Dropdown;
 use TallStackUi\View\Components\Dropdown\Items as DropdownItems;
 use TallStackUi\View\Components\Errors;
@@ -24,12 +25,14 @@ use TallStackUi\View\Components\Form\Input;
 use TallStackUi\View\Components\Form\Label;
 use TallStackUi\View\Components\Form\Number;
 use TallStackUi\View\Components\Form\Password;
+use TallStackUi\View\Components\Form\Pin;
 use TallStackUi\View\Components\Form\Radio;
 use TallStackUi\View\Components\Form\Range;
 use TallStackUi\View\Components\Form\Textarea;
 use TallStackUi\View\Components\Form\Toggle;
 use TallStackUi\View\Components\Interaction\Dialog;
 use TallStackUi\View\Components\Interaction\Toast;
+use TallStackUi\View\Components\Link;
 use TallStackUi\View\Components\Loading;
 use TallStackUi\View\Components\Modal;
 use TallStackUi\View\Components\Select\Native as SelectNative;
@@ -40,7 +43,6 @@ use TallStackUi\View\Components\Tab\Tab;
 use TallStackUi\View\Components\Tooltip;
 use TallStackUi\View\Components\Wrapper\Input as InputWrapper;
 use TallStackUi\View\Components\Wrapper\Radio as RadioWrapper;
-use TallStackUi\View\Components\DatePicker\DatePicker;
 
 /**
  * @internal This class is not meant to be used directly.
@@ -95,14 +97,14 @@ class Personalization
         return app($this->component(Card::class));
     }
 
-    public function dialog(): PersonalizationResources
-    {
-        return app($this->component(Dialog::class));
-    }
-
     public function datepicker(): PersonalizationResources
     {
         return app($this->component(DatePicker::class));
+    }
+
+    public function dialog(): PersonalizationResources
+    {
+        return app($this->component(Dialog::class));
     }
 
     public function dropdown(?string $component = null): PersonalizationResources
@@ -137,6 +139,7 @@ class Personalization
             'number' => Number::class,
             'range' => Range::class,
             'password' => Password::class,
+            'pin' => Pin::class,
             'radio' => Radio::class,
             'textarea' => Textarea::class,
             'toggle' => Toggle::class,
@@ -148,8 +151,8 @@ class Personalization
 
     public function instance(): PersonalizationResources
     {
-        if (!$this->component) {
-            throw new InvalidArgumentException('No component has been set');
+        if (! $this->component) {
+            throw new RuntimeException('No component has been set');
         }
 
         if (str_contains($this->component, 'tallstack-ui::personalizations')) {
@@ -160,11 +163,16 @@ class Personalization
         $main = $parts[0];
         $secondary = $parts[1] ?? null;
 
-        if (!method_exists($this, $main)) {
-            throw new InvalidArgumentException("The method [{$main}] is not supported");
+        if (! method_exists($this, $main)) {
+            throw new RuntimeException("The method [{$main}] is not supported");
         }
 
         return call_user_func([$this, $main], $main === $secondary ?: $secondary);
+    }
+
+    public function link(): PersonalizationResources
+    {
+        return app($this->component(Link::class));
     }
 
     public function loading(): PersonalizationResources
@@ -236,7 +244,7 @@ class Personalization
     {
         $component = array_search($class, tallstackui_components_soft_personalized());
 
-        if (!$component) {
+        if (! $component) {
             throw new Exception("Component [{$class}] is not allowed to be personalized");
         }
 

@@ -5,8 +5,8 @@ namespace TallStackUi\View\Components;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Arr;
 use InvalidArgumentException;
+use TallStackUi\Foundation\Attributes\SoftPersonalization;
 use TallStackUi\Foundation\Personalization\Contracts\Personalization;
-use TallStackUi\Foundation\Personalization\SoftPersonalization;
 
 #[SoftPersonalization('modal')]
 class Modal extends BaseComponent implements Personalization
@@ -20,7 +20,8 @@ class Modal extends BaseComponent implements Personalization
         public ?bool $blur = null,
         public ?bool $persistent = null,
         public ?string $size = null,
-        public string $entangle = 'modal',
+        public ?string $entangle = 'modal',
+        public ?bool $center = null,
     ) {
         $this->entangle = is_string($this->wire) ? $this->wire : (! is_bool($this->wire) ? $this->entangle : 'modal');
     }
@@ -36,8 +37,12 @@ class Modal extends BaseComponent implements Personalization
             'wrapper' => [
                 'first' => 'fixed inset-0 bg-gray-400 bg-opacity-50 transition-opacity',
                 'second' => 'fixed inset-0 z-50 w-screen overflow-y-auto',
-                'third' => 'mx-auto flex min-h-full w-full transform items-end justify-center p-4 sm:items-start',
+                'third' => 'mx-auto flex min-h-full w-full transform justify-center p-4',
                 'fourth' => 'dark:bg-dark-700 relative flex w-full transform flex-col rounded-xl bg-white text-left shadow-xl transition-all',
+            ],
+            'positions' => [
+                'top' => 'items-end sm:items-start',
+                'center' => 'items-end sm:items-center',
             ],
             'blur' => 'backdrop-blur-sm',
             'title' => [
@@ -56,14 +61,14 @@ class Modal extends BaseComponent implements Personalization
             throw new InvalidArgumentException('The [wire] property cannot be an empty string');
         }
 
-        $configuration = config('tallstackui.settings.modal');
+        $configuration = collect(config('tallstackui.settings.modal'));
         $sizes = ['sm', 'md', 'lg', 'xl', '2xl', '3xl', '4xl', '5xl', '6xl', '7xl'];
 
-        if (! in_array($this->size ?? $configuration['size'], $sizes)) {
+        if (! in_array($this->size ?? $configuration->get('size', '2xl'), $sizes)) {
             throw new InvalidArgumentException('The modal size must be one of the following: ['.implode(', ', $sizes).']');
         }
 
-        if (! str($this->zIndex ?? $configuration['z-index'])->startsWith('z-')) {
+        if (! str($this->zIndex ?? $configuration->get('z-index', 'z-50'))->startsWith('z-')) {
             throw new InvalidArgumentException('The modal z-index must start with z- prefix');
         }
     }

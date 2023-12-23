@@ -5,8 +5,10 @@ namespace TallStackUi\View\Components\Form;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use InvalidArgumentException;
+use TallStackUi\Foundation\Attributes\SkipDebug;
+use TallStackUi\Foundation\Attributes\SoftPersonalization;
 use TallStackUi\Foundation\Personalization\Contracts\Personalization;
-use TallStackUi\Foundation\Personalization\SoftPersonalization;
 use TallStackUi\View\Components\BaseComponent;
 use TallStackUi\View\Components\Form\Traits\DefaultInputClasses;
 
@@ -17,15 +19,14 @@ class Color extends BaseComponent implements Personalization
 
     public function __construct(
         public ?string $label = null,
-        public ?string $id = null,
         public ?string $hint = null,
-        public ?bool $full = false,
+        public ?bool $picker = false,
         public Collection|array $colors = [],
+        #[SkipDebug]
         public ?string $mode = null,
         public ?bool $invalidate = null,
     ) {
-        $this->id ??= uniqid();
-        $this->mode = $this->full ? 'full' : 'range';
+        $this->mode = $this->picker ? 'picker' : 'range';
     }
 
     public function blade(): View
@@ -61,5 +62,20 @@ class Color extends BaseComponent implements Personalization
             ],
             'error' => $this->error(),
         ]);
+    }
+
+    protected function validate(): void
+    {
+        $colors = collect($this->colors);
+
+        if ($colors->isEmpty()) {
+            return;
+        }
+
+        $colors->each(function (string $color) {
+            if (! str($color)->startsWith('#')) {
+                throw new InvalidArgumentException('All the [colors] must starts with #');
+            }
+        });
     }
 }

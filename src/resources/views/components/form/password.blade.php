@@ -1,10 +1,9 @@
 @php
-    $wire = $wireable($attributes);
-    $error = !$invalidate && $wire && $errors->has($wire->value());
+    [$property, $error, $id] = $bind($attributes, $errors ?? null, isset($__livewire));
     $personalize = $classes();
 @endphp
 
-<x-wrapper.input :$id :$wire :$label :$hint :$invalidate password>
+<x-wrapper.input :$id :$property :$error :$label :$hint :$invalidate password>
     <div @class([
         $personalize['input.wrapper'],
         $personalize['input.color.base'] => !$error,
@@ -18,6 +17,6 @@
                 <x-icon name="eye-slash" :$error @class($personalize['icon.class']) x-show="show"/>
             </div>
         </div>
-        <input id="{{ $id }}" {{ $attributes->class([$personalize['input.base']]) }} :type="!show ? 'password' : 'text'">
+        <input @if ($id) id="{{ $id }}" @endif {{ $attributes->class([$personalize['input.base']]) }} :type="!show ? 'password' : 'text'">
     </div>
 </x-wrapper.input>
